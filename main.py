@@ -11,7 +11,7 @@ def analyze(data_frame, col):
         .reset_index(name='num').sort_values(by='num', ascending=False)
 
 
-if __name__ == '__main__':
+def run():
     pd.set_option('display.max_row', 100,
                   'display.max_column', 1000,
                   'display.max_colwidth', 1000,
@@ -26,6 +26,7 @@ if __name__ == '__main__':
 
     s = pd.Series(np.random.randn(100).cumsum(), index=np.arange(0, 100))
     s.plot()
+    plt.show()
     exit()
     # 列名
     # print(df.columns.values)
@@ -101,3 +102,7 @@ if __name__ == '__main__':
     print(platform)
 
     writer = pd.ExcelWriter
+
+
+if __name__ == '__main__':
+    run()
