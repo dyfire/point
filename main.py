@@ -8,21 +8,82 @@ import xlsxwriter
 
 
 def analyze(data_frame, col):
+    """
+    按照指定列分组统计
+    :param data_frame: DataFrame
+    :param col: 列名
+    :return: DataFrame
+    """
     return data_frame.groupby([col])[col].count() \
         .reset_index(name='num').sort_values(by='num', ascending=False)
 
 
 def multi(data_frame, col):
+    """
+    指定多列分别分组统计
+    :param data_frame: DataFrame
+    :param col: 多列名list
+    :return: dict
+    """
     data = {}
     for c in col:
-        new_index = c + '_num'
+        new_index = 'num'
         data[c] = data_frame.groupby([c])[c].count() \
             .reset_index(name=new_index).sort_values(by=new_index, ascending=False)
 
     return data
 
 
+def mixed_and_percent(data_frame, col, top=10, is_rate=True):
+    """
+    获取指定列的处理数据
+    :param is_rate:
+    :param data_frame: DataFrame
+    :param col:
+    :param top:
+    :return: DataFrame
+    """
+    row = analyze(data_frame, col)
+
+    if is_rate:
+        if data_frame.shape[0] <= top:
+            return row
+
+        row['rate'] = row['num'] / row.sum()['num']
+        row['rate'] = row['rate'].map(lambda x: round(x, 4))
+
+        # top
+        row_top = row.head(top)
+        row_top_sum = row_top.sum()
+
+        # 插入'其他'行
+        obj = {}
+        for k in row_top.columns.values:
+            obj[k] = 'other'
+        obj['rate'] = 1 - row_top_sum['rate']
+        obj = pd.DataFrame(obj, index=[0])
+
+        row = row_top.append(obj, ignore_index=True)
+
+    return row
+
+
+def rename(name):
+    """
+    设置sheet名称
+    :param name: string
+    :return: string
+    """
+    if len(name) > 31:
+        return name[18:]
+    return name
+
+
 def run():
+    """
+    运行主程序
+    :return:
+    """
     pd.set_option('display.max_row', 100,
                   'display.max_column', 1000,
                   'display.max_colwidth', 1000,
@@ -47,104 +108,25 @@ def run():
         'JobSkillImportanceEnterpriseTools',
         'JobSkillImportancePython',
         'JobSkillImportanceR',
-        'JobSkillImportanceSQL']
+        'JobSkillImportanceSQL',
+        'WorkToolsFrequencySQL',
+        'JobSkillImportanceSQL',
+        'LearningCategoryOnlineCourses'
+    ]
 
     dt = multi(df, cols)
     output_file = 'output.xlsx'
     writer = pd.ExcelWriter(output_file)
-    i = 1
+
     for (k, v) in dt.items():
-        v.to_excel(writer, sheet_name='Sheet' + str(i), index=False)
-        i += 1
+        v.to_excel(writer, sheet_name=rename(k), index=False)
+
+    for r in ['Age', 'Country', 'GenderSelect']:
+        v = mixed_and_percent(df, r)
+        v.to_excel(writer, sheet_name=r + '-mixed', index=False)
     writer.save()
     writer.close()
-    return
-
-    # 列名
-    # print(df.columns.values)
-    # 数据概览
-    print(df.info())
-
-    # 总行数
-    rows = df.shape[0]
-    print(rows)
-
-    # 总列数
-    columns = df.shape[1]
-    print(columns)
-
-    # 国家
-    country_nums = df.groupby(['Country'])['Country'].count() \
-        .reset_index(name='num').sort_values(by='num', ascending=False)
-    print(country_nums)
-
-    # 国家10
-    top_country_num = country_nums.head(10)
-    print(top_country_num)
-
-    # 年龄段
-    age_period = analyze(df, 'Age')
-
-    # 年龄段百分比
-    age_period['rate'] = age_period['num'] / age_period.sum()['num']
-    age_period['rate'] = age_period['rate'].map(lambda x: round(x, 4))
-
-    # 年龄段前12
-    age_period_top = age_period.head(12)
-    age_period_top_sum = age_period_top.sum()
-
-    # 插入'其他'行
-    obj = pd.DataFrame({
-        'Age': '其他',
-        'num': 0,
-        'rate': (1 - age_period_top_sum['rate'])
-    }, index=[0])
-
-    age_period_top = age_period_top.append(obj, ignore_index=True)
-    age_period_top['Age'].value_counts().head(10).plot.bar()
-    print(age_period_top)
-
-    # 年龄平均值
-    age_mean = age_period.mean()['Age']
-
-    # 性别
-    gender = df.groupby(['GenderSelect'])['GenderSelect'].count().reset_index(name='num') \
-        .sort_values(by='num', ascending=False)
-    print(gender)
-
-    # 性别占比
-    gender['gender_rate'] = gender['num'] / gender.sum()['num']
-    print(gender)
-
-    # 当前职称
-    job = df.groupby(['CurrentJobTitleSelect'])['CurrentJobTitleSelect'].count(). \
-        reset_index(name='num').sort_values(by='num', ascending=False)
-    print(job)
-
-    # 语言
-    lang = df.groupby(['LanguageRecommendationSelect'])['LanguageRecommendationSelect'].count() \
-        .reset_index(name='num').sort_values(by='num', ascending=False)
-    print(lang)
-
-    # 学习平台
-    platform = df.groupby(['LearningPlatformSelect'])['LearningPlatformSelect'].count() \
-        .reset_index(name='num').sort_values(by='num', ascending=False)
-    print(platform)
-
-    # 工作中使用SQL的频率
-    sql_frequent = analyze(df, 'WorkToolsFrequencySQL')
-    print(sql_frequent)
-
-    # SQL重要性
-    sql_important = analyze(df, 'JobSkillImportanceSQL')
-    print(sql_important)
-
-    # 在线学习课时
-    study_time = analyze(df, 'LearningCategoryOnlineCourses')
-    print(study_time)
-
-    # 就业情况
-    employment_status = analyze(df, 'EmploymentStatus')
+    print "finished"
 
 
 if __name__ == '__main__':
