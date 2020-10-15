@@ -46,9 +46,6 @@ def mixed_and_percent(data_frame, col, top=10, is_rate=True):
     row = analyze(data_frame, col)
 
     if is_rate:
-        if data_frame.shape[0] <= top:
-            return row
-
         row['rate'] = row['num'] / row.sum()['num']
         row['rate'] = row['rate'].map(lambda x: round(x, 4))
 
@@ -57,13 +54,14 @@ def mixed_and_percent(data_frame, col, top=10, is_rate=True):
         row_top_sum = row_top.sum()
 
         # 插入'其他'行
-        obj = {}
-        for k in row_top.columns.values:
-            obj[k] = 'other'
-        obj['rate'] = 1 - row_top_sum['rate']
-        obj = pd.DataFrame(obj, index=[0])
+        if row.shape[0] > top:
+            obj = {}
+            for k in row_top.columns.values:
+                obj[k] = 'other'
+            obj['rate'] = 1 - row_top_sum['rate']
+            obj = pd.DataFrame(obj, index=[0])
 
-        row = row_top.append(obj, ignore_index=True)
+            row = row_top.append(obj, ignore_index=True)
 
     return row
 
