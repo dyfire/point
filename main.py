@@ -25,7 +25,7 @@ def run():
                      low_memory=False)
 
     s = pd.Series(np.random.randn(100).cumsum(), index=np.arange(0, 100))
-    s.plot()
+    s.plot().bar()
     plt.show()
     exit()
     # 列名
