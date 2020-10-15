@@ -3,8 +3,6 @@
 import pandas as pd
 import numpy as np
 import os
-import matplotlib.pyplot as plt
-import xlsxwriter
 
 
 def analyze(data_frame, col):
@@ -93,6 +91,13 @@ def run():
 
     df = pd.read_csv(file_data, encoding='unicode_escape',
                      low_memory=False)
+    if df.empty:
+        print('empty DataFrame')
+        exit(0)
+
+    df['Country'] = df['Country'].mask(df['Country'] == 'Taiwan', "People 's Republic of China")
+    df['Country'] = df['Country'].mask(df['Country'] == 'Hong Kong', "People 's Republic of China")
+    df['Country'] = df['Country'].mask(df['Country'] == 'Republic of China', "People 's Republic of China")
 
     cols = [
         'Country',
