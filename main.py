@@ -3,6 +3,7 @@
 import pandas as pd
 import numpy as np
 import os
+from sklearn.model_selection import train_test_split
 
 
 def analyze(data_frame, col):
@@ -95,6 +96,9 @@ def run():
         print('empty DataFrame')
         exit(0)
 
+    print(df.info(verbose = True, null_counts=False))
+    return
+
     df['Country'] = df['Country'].mask(df['Country'] == 'Taiwan', "People 's Republic of China")
     df['Country'] = df['Country'].mask(df['Country'] == 'Hong Kong', "People 's Republic of China")
     df['Country'] = df['Country'].mask(df['Country'] == 'Republic of China', "People 's Republic of China")
@@ -129,7 +133,7 @@ def run():
         v.to_excel(writer, sheet_name=r + '-mixed', index=False)
     writer.save()
     writer.close()
-    print "finished"
+    print("finished")
 
 
 if __name__ == '__main__':
