@@ -3,7 +3,8 @@
 import pandas as pd
 import numpy as np
 import os
-from sklearn.model_selection import train_test_split
+from pyecharts.charts import Bar
+from pyecharts import options as opts
 
 
 def analyze(data_frame, col):
@@ -96,8 +97,7 @@ def run():
         print('empty DataFrame')
         exit(0)
 
-    print(df.info(verbose = True, null_counts=False))
-    return
+    # print(df.info(verbose=True, null_counts=False))
 
     df['Country'] = df['Country'].mask(df['Country'] == 'Taiwan', "People 's Republic of China")
     df['Country'] = df['Country'].mask(df['Country'] == 'Hong Kong', "People 's Republic of China")
@@ -136,5 +136,28 @@ def run():
     print("finished")
 
 
+def chart():
+    bar = Bar()
+    bar.add_xaxis(["衬衫", "羊毛衫", "雪纺衫", "裤子", "高跟鞋", "袜子"])
+    bar.add_yaxis("商家A", [5, 20, 36, 10, 75, 90])
+    # render 会生成本地 HTML 文件，默认会在当前目录生成 render.html 文件
+    # 也可以传入路径参数，如 bar.render("mycharts.html")
+    bar.render()
+
+
 if __name__ == '__main__':
-    run()
+    # 示例数据
+    cate = ['Apple', 'Huawei', 'Xiaomi', 'Oppo', 'Vivo', 'Meizu']
+    data1 = [123, 153, 89, 107, 98, 23]
+    data2 = [56, 77, 93, 68, 45, 67]
+
+    # 1.x版本支持链式调用
+    bar = (Bar()
+           .add_xaxis(cate)
+           .add_yaxis('电商渠道', data1)
+           .add_yaxis('门店', data2)
+           .set_global_opts(title_opts=opts.TitleOpts(title="Bar-基本示例", subtitle="我是副标题"))
+           )
+    # 在jupyter notebook总渲染
+    bar.render()
+
