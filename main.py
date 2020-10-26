@@ -3,8 +3,8 @@
 import pandas as pd
 import numpy as np
 import os
-from pyecharts.charts import Bar
 from pyecharts import options as opts
+from pyecharts.charts import Pie
 
 
 def analyze(data_frame, col):
@@ -97,12 +97,25 @@ def run():
         print('empty DataFrame')
         exit(0)
 
-    # print(df.info(verbose=True, null_counts=False))
+    df = df.dropna(subset=['Age'])
+    df['Age'] = df['Age'].astype("int")
 
     df['Country'] = df['Country'].mask(df['Country'] == 'Taiwan', "People 's Republic of China")
     df['Country'] = df['Country'].mask(df['Country'] == 'Hong Kong', "People 's Republic of China")
     df['Country'] = df['Country'].mask(df['Country'] == 'Republic of China', "People 's Republic of China")
 
+    df = df[(df['Age'] < 60) & (df['Age'] > 15)]
+
+    # 性别饼图
+    pie_data = analyze(df, 'GenderSelect')
+    data_pair = [list(z) for z in zip(pie_data['GenderSelect'], pie_data['num'])]
+    print(data_pair)
+
+    Pie() \
+        .add(data_pair=data_pair, rosetype='radius', series_name='性别饼状图') \
+        .render('pie.html')
+
+    return
     cols = [
         'Country',
         'Age',
@@ -146,17 +159,4 @@ def chart():
 
 
 if __name__ == '__main__':
-    # 示例数据
-    cate = ['Apple', 'Huawei', 'Xiaomi', 'Oppo', 'Vivo', 'Meizu']
-    data1 = [123, 153, 89, 107, 98, 23]
-    data2 = [56, 77, 93, 68, 45, 67]
-
-    # 1.x版本支持链式调用
-    bar = (Bar()
-           .add_xaxis(cate)
-           .add_yaxis('电商渠道', data1)
-           .add_yaxis('门店', data2)
-           .set_global_opts(title_opts=opts.TitleOpts(title="Bar-基本示例", subtitle="我是副标题"))
-           )
-    # 在jupyter notebook总渲染
-    bar.renderer
+    run()
