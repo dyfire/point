@@ -159,5 +159,4 @@ if __name__ == '__main__':
            .set_global_opts(title_opts=opts.TitleOpts(title="Bar-基本示例", subtitle="我是副标题"))
            )
     # 在jupyter notebook总渲染
-    bar.render()
-
+    bar.renderer
