@@ -3,12 +3,8 @@
 import pandas as pd
 import numpy as np
 import os
-<<<<<<< HEAD
-import matplotlib.pyplot as plt
-=======
-from pyecharts.charts import Bar
 from pyecharts import options as opts
->>>>>>> cd217563553f20989263c34a54c3375bb9d3cae1
+from pyecharts.charts import Pie
 
 
 def analyze(data_frame, col):
@@ -101,10 +97,8 @@ def run():
         print('empty DataFrame')
         exit(0)
 
-
     df = df.dropna(subset=['Age'])
     df['Age'] = df['Age'].astype("int")
-
 
     df['Country'] = df['Country'].mask(df['Country'] == 'Taiwan', "People 's Republic of China")
     df['Country'] = df['Country'].mask(df['Country'] == 'Hong Kong', "People 's Republic of China")
@@ -112,7 +106,15 @@ def run():
 
     df = df[(df['Age'] < 60) & (df['Age'] > 15)]
 
-    print(df.shape)
+    # 性别饼图
+    pie_data = analyze(df, 'GenderSelect')
+    data_pair = [list(z) for z in zip(pie_data['GenderSelect'], pie_data['num'])]
+    print(data_pair)
+
+    Pie() \
+        .add(data_pair=data_pair, rosetype='radius', series_name='性别饼状图') \
+        .render('pie.html')
+
     return
     cols = [
         'Country',
@@ -158,4 +160,3 @@ def chart():
 
 if __name__ == '__main__':
     run()
-
