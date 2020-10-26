@@ -1,3 +1,7 @@
 .idea
 output.*
+<<<<<<< HEAD
+=======
+render.html
+>>>>>>> cd217563553f20989263c34a54c3375bb9d3cae1
 .ipynb_checkpoints

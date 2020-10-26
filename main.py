@@ -3,7 +3,12 @@
 import pandas as pd
 import numpy as np
 import os
+<<<<<<< HEAD
 import matplotlib.pyplot as plt
+=======
+from pyecharts.charts import Bar
+from pyecharts import options as opts
+>>>>>>> cd217563553f20989263c34a54c3375bb9d3cae1
 
 
 def analyze(data_frame, col):
@@ -96,8 +101,10 @@ def run():
         print('empty DataFrame')
         exit(0)
 
+
     df = df.dropna(subset=['Age'])
     df['Age'] = df['Age'].astype("int")
+
 
     df['Country'] = df['Country'].mask(df['Country'] == 'Taiwan', "People 's Republic of China")
     df['Country'] = df['Country'].mask(df['Country'] == 'Hong Kong', "People 's Republic of China")
@@ -140,5 +147,15 @@ def run():
     print("finished")
 
 
+def chart():
+    bar = Bar()
+    bar.add_xaxis(["衬衫", "羊毛衫", "雪纺衫", "裤子", "高跟鞋", "袜子"])
+    bar.add_yaxis("商家A", [5, 20, 36, 10, 75, 90])
+    # render 会生成本地 HTML 文件，默认会在当前目录生成 render.html 文件
+    # 也可以传入路径参数，如 bar.render("mycharts.html")
+    bar.render()
+
+
 if __name__ == '__main__':
     run()
+
