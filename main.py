@@ -4,7 +4,8 @@ import pandas as pd
 import numpy as np
 import os
 from pyecharts import options as opts
-from pyecharts.charts import Pie
+from pyecharts.charts import Pie, Bar
+from pyecharts.globals import ThemeType
 
 
 def analyze(data_frame, col):
@@ -104,17 +105,10 @@ def run():
     df['Country'] = df['Country'].mask(df['Country'] == 'Hong Kong', "People 's Republic of China")
     df['Country'] = df['Country'].mask(df['Country'] == 'Republic of China', "People 's Republic of China")
 
-    df = df[(df['Age'] < 60) & (df['Age'] > 15)]
+    df = df[(df['Age'] <= 60) & (df['Age'] >= 15)]
 
-    # 性别饼图
-    pie_data = analyze(df, 'GenderSelect')
-    data_pair = [list(z) for z in zip(pie_data['GenderSelect'], pie_data['num'])]
-    print(data_pair)
-
-    Pie() \
-        .add(data_pair=data_pair, rosetype='radius', series_name='性别饼状图') \
-        .render('pie.html')
-
+    chart_gender(df)
+    chart_age(df)
     return
     cols = [
         'Country',
@@ -149,13 +143,33 @@ def run():
     print("finished")
 
 
-def chart():
-    bar = Bar()
-    bar.add_xaxis(["衬衫", "羊毛衫", "雪纺衫", "裤子", "高跟鞋", "袜子"])
-    bar.add_yaxis("商家A", [5, 20, 36, 10, 75, 90])
-    # render 会生成本地 HTML 文件，默认会在当前目录生成 render.html 文件
-    # 也可以传入路径参数，如 bar.render("mycharts.html")
-    bar.render()
+def chart_gender(df):
+    """
+    性别饼图
+    :param df: DataFrame
+    :return:
+    """
+    pie_data = analyze(df, 'GenderSelect')
+    data_pair_pie = [list(z) for z in zip(pie_data['GenderSelect'],
+                                          [int(x) for x in pie_data['num']])]
+
+    c = (Pie()
+         .set_global_opts(opts.ToolboxOpts(is_show=True))
+         .add(data_pair=data_pair_pie, series_name='性别')
+         )
+    c.render('pie.html')
+    return
+
+
+def chart_age(df):
+    data = analyze(df, 'Age').sort_values(by='Age', ascending=True)
+    bar = Bar(init_opts=opts.InitOpts(width='1500px')).set_global_opts()
+
+    data_x = [int(x) for x in data['Age']]
+    data_y = [int(x) for x in data['num']]
+    bar.add_xaxis(data_x)
+    bar.add_yaxis("num", data_y)
+    bar.render('bar.html')
 
 
 if __name__ == '__main__':
