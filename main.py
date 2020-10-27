@@ -5,6 +5,8 @@ import numpy as np
 import os
 from pyecharts import options as opts
 from pyecharts.charts import Pie, Bar
+from pyecharts.globals import ThemeType
+from pyecharts.charts import Pie, Bar
 from pyecharts.faker import Faker
 
 
@@ -105,22 +107,10 @@ def run():
     df['Country'] = df['Country'].mask(df['Country'] == 'Hong Kong', "People 's Republic of China")
     df['Country'] = df['Country'].mask(df['Country'] == 'Republic of China', "People 's Republic of China")
 
-    df = df[(df['Age'] < 60) & (df['Age'] > 15)]
+    df = df[(df['Age'] <= 60) & (df['Age'] >= 15)]
 
-    # 性别饼图
-    pie_data = analyze(df, 'GenderSelect')
-    pie_data['GenderSelect'] = pie_data['GenderSelect'].str.replace(' ', '')
-    pie_data['GenderSelect'] = pie_data['GenderSelect'].str.replace(',', '')
-    pie_data['num'] = 0
-    pie_data = pie_data.head(2)
-    a = [list(z) for z in zip(pie_data['GenderSelect'], pie_data['num'].astype('int'))]
-    b = [list(z) for z in zip(Faker.choose(), Faker.values())]
-    data_pair = a
-
-    Pie().add("", data_pair) \
-        .render('pie.html')
-
-
+    chart_gender(df)
+    chart_age(df)
     return
     cols = [
         'Country',
@@ -153,6 +143,35 @@ def run():
     writer.save()
     writer.close()
     print("finished")
+
+
+def chart_gender(df):
+    """
+    性别饼图
+    :param df: DataFrame
+    :return:
+    """
+    pie_data = analyze(df, 'GenderSelect')
+    data_pair_pie = [list(z) for z in zip(pie_data['GenderSelect'],
+                                          [int(x) for x in pie_data['num']])]
+
+    c = (Pie()
+         .set_global_opts(opts.ToolboxOpts(is_show=True))
+         .add(data_pair=data_pair_pie, series_name='性别')
+         )
+    c.render('pie.html')
+    return
+
+
+def chart_age(df):
+    data = analyze(df, 'Age').sort_values(by='Age', ascending=True)
+    bar = Bar(init_opts=opts.InitOpts(width='1500px')).set_global_opts()
+
+    data_x = [int(x) for x in data['Age']]
+    data_y = [int(x) for x in data['num']]
+    bar.add_xaxis(data_x)
+    bar.add_yaxis("num", data_y)
+    bar.render('bar.html')
 
 
 if __name__ == '__main__':
