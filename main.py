@@ -109,8 +109,8 @@ def run():
 
     df = df[(df['Age'] <= 60) & (df['Age'] >= 15)]
 
-    chart_gender(df)
-    chart_age(df)
+    chart_plan(df)
+
     return
     cols = [
         'Country',
@@ -170,8 +170,40 @@ def chart_age(df):
     data_x = [int(x) for x in data['Age']]
     data_y = [int(x) for x in data['num']]
     bar.add_xaxis(data_x)
-    bar.add_yaxis("num", data_y)
+    bar.add_yaxis("年龄分布图", data_y)
     bar.render('bar.html')
+
+
+def chart_employment_status(df):
+    data = analyze(df, 'EmploymentStatus')
+    data_pair_pie = [list(z) for z in zip(data['EmploymentStatus'],
+                                          [int(x) for x in data['num']])]
+
+    c = (Pie(init_opts=opts.InitOpts(theme=ThemeType.MACARONS, width='1500px'))
+         .set_global_opts(title_opts=opts.TitleOpts(title="就业情况"),
+                          legend_opts=opts.LegendOpts(
+                              orient="vertical",
+                              pos_top="15%",
+                              pos_left="2%"),
+                          )
+         .add(data_pair=data_pair_pie, series_name='就业情况', radius=["40%", "75%"], )
+         )
+    c.render('pie_status.html')
+
+
+def chart_plan(df):
+    data_tool = analyze(df, 'MLToolNextYearSelect').head(20)
+
+    data_tool_x = [y for y in data_tool['MLToolNextYearSelect']]
+    data_tool_y = [int(y) for y in data_tool['num']]
+
+    c = (Bar(init_opts=opts.InitOpts(width='1000px')).set_global_opts()
+         .add_xaxis(data_tool_x)
+         .add_yaxis("工具", data_tool_y)
+         .set_global_opts(title_opts=opts.TitleOpts(title="明年使用工具"),
+                          xaxis_opts=opts.AxisOpts(name_rotate=60, axislabel_opts={"rotate": 45}))
+         )
+    c.render('bar_plan.html')
 
 
 if __name__ == '__main__':
