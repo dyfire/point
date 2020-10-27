@@ -4,7 +4,8 @@ import pandas as pd
 import numpy as np
 import os
 from pyecharts import options as opts
-from pyecharts.charts import Pie
+from pyecharts.charts import Pie, Bar
+from pyecharts.faker import Faker
 
 
 def analyze(data_frame, col):
@@ -108,12 +109,17 @@ def run():
 
     # 性别饼图
     pie_data = analyze(df, 'GenderSelect')
-    data_pair = [list(z) for z in zip(pie_data['GenderSelect'], pie_data['num'])]
-    print(data_pair)
+    pie_data['GenderSelect'] = pie_data['GenderSelect'].str.replace(' ', '')
+    pie_data['GenderSelect'] = pie_data['GenderSelect'].str.replace(',', '')
+    pie_data['num'] = 0
+    pie_data = pie_data.head(2)
+    a = [list(z) for z in zip(pie_data['GenderSelect'], pie_data['num'].astype('int'))]
+    b = [list(z) for z in zip(Faker.choose(), Faker.values())]
+    data_pair = a
 
-    Pie() \
-        .add(data_pair=data_pair, rosetype='radius', series_name='性别饼状图') \
+    Pie().add("", data_pair) \
         .render('pie.html')
+
 
     return
     cols = [
@@ -147,15 +153,6 @@ def run():
     writer.save()
     writer.close()
     print("finished")
-
-
-def chart():
-    bar = Bar()
-    bar.add_xaxis(["衬衫", "羊毛衫", "雪纺衫", "裤子", "高跟鞋", "袜子"])
-    bar.add_yaxis("商家A", [5, 20, 36, 10, 75, 90])
-    # render 会生成本地 HTML 文件，默认会在当前目录生成 render.html 文件
-    # 也可以传入路径参数，如 bar.render("mycharts.html")
-    bar.render()
 
 
 if __name__ == '__main__':
