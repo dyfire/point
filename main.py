@@ -163,12 +163,16 @@ def chart_gender(df):
 
 def chart_age(df):
     data = analyze(df, 'Age').sort_values(by='Age', ascending=True)
-    bar = Bar(init_opts=opts.InitOpts(width='1500px')).set_global_opts()
+    bar = Bar(init_opts=opts.InitOpts(width='1200px'))
 
     data_x = [int(x) for x in data['Age']]
     data_y = [int(x) for x in data['num']]
     bar.add_xaxis(data_x)
-    bar.add_yaxis("num", data_y)
+    bar.add_yaxis("年龄分布", data_y)
+    bar.set_global_opts(title_opts=opts.TitleOpts(title="Kaggle从业人员数据", subtitle="年龄分布"),
+                        toolbox_opts=opts.ToolboxOpts,
+                        legend_opts=opts.LegendOpts(is_show=False)
+                        )
     bar.render('bar.html')
 
 
