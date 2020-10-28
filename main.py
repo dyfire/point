@@ -6,6 +6,8 @@ import os
 from pyecharts import options as opts
 from pyecharts.charts import Pie, Bar
 from pyecharts.globals import ThemeType
+from pyecharts.charts import Pie, Bar, Line
+from pyecharts.faker import Faker
 
 
 def analyze(data_frame, col):
@@ -107,9 +109,12 @@ def run():
 
     df = df[(df['Age'] <= 60) & (df['Age'] >= 15)]
 
-    chart_gender(df)
-    chart_age(df)
-    return
+    chart_lang(df)
+
+    print("finished")
+
+
+def excel_writer(df):
     cols = [
         'Country',
         'Age',
@@ -140,7 +145,6 @@ def run():
         v.to_excel(writer, sheet_name=r + '-mixed', index=False)
     writer.save()
     writer.close()
-    print("finished")
 
 
 def chart_gender(df):
@@ -163,17 +167,66 @@ def chart_gender(df):
 
 def chart_age(df):
     data = analyze(df, 'Age').sort_values(by='Age', ascending=True)
-    bar = Bar(init_opts=opts.InitOpts(width='1200px'))
+    bar = Bar(init_opts=opts.InitOpts(width='1500px')).set_global_opts()
 
     data_x = [int(x) for x in data['Age']]
     data_y = [int(x) for x in data['num']]
     bar.add_xaxis(data_x)
-    bar.add_yaxis("年龄分布", data_y)
-    bar.set_global_opts(title_opts=opts.TitleOpts(title="Kaggle从业人员数据", subtitle="年龄分布"),
-                        toolbox_opts=opts.ToolboxOpts,
-                        legend_opts=opts.LegendOpts(is_show=False)
-                        )
+    bar.add_yaxis("年龄分布图", data_y)
     bar.render('bar.html')
+
+
+def chart_employment_status(df):
+    data = analyze(df, 'EmploymentStatus')
+    data_pair_pie = [list(z) for z in zip(data['EmploymentStatus'],
+                                          [int(x) for x in data['num']])]
+
+    c = (Pie(init_opts=opts.InitOpts(theme=ThemeType.MACARONS, width='1500px'))
+         .set_global_opts(title_opts=opts.TitleOpts(title="就业情况"),
+                          legend_opts=opts.LegendOpts(
+                              orient="vertical",
+                              pos_top="15%",
+                              pos_left="2%"),
+                          )
+         .add(data_pair=data_pair_pie, series_name='就业情况', radius=["40%", "75%"], )
+         )
+    c.render('pie_status.html')
+
+
+def chart_plan(df):
+    data_tool = analyze(df, 'MLToolNextYearSelect').head(20)
+
+    data_tool_x = [y for y in data_tool['MLToolNextYearSelect']]
+    data_tool_y = [int(y) for y in data_tool['num']]
+
+    c = (Bar(init_opts=opts.InitOpts(width='1000px')).set_global_opts()
+         .add_xaxis(data_tool_x)
+         .add_yaxis("工具", data_tool_y)
+         .set_global_opts(title_opts=opts.TitleOpts(title="明年使用工具"),
+                          xaxis_opts=opts.AxisOpts(name_rotate=60, axislabel_opts={"rotate": 45}))
+         )
+    c.render('bar_plan.html')
+
+
+def chart_lang(df):
+    data_python = analyze(df, 'JobSkillImportancePython')
+    data_r = analyze(df, 'JobSkillImportanceR')
+    data_sql = analyze(df, 'JobSkillImportanceSQL')
+
+    x = data_python['JobSkillImportancePython']
+    data_python_y = [int(y) for y in data_python['num']]
+    data_r_y = [int(y) for y in data_r['num']]
+    data_sql_y = [int(y) for y in data_sql['num']]
+    
+    c = (
+        Line()
+            .add_xaxis(x)
+            .add_yaxis('Python', data_python_y, is_step=True)
+            .add_yaxis('R', data_r_y, is_step=True)
+            .add_yaxis('SQL', data_sql_y, is_step=True)
+            .set_global_opts(title_opts=opts.TitleOpts(title='语言在工作中重要性折线图'))
+    )
+    c.render('line.html')
 
 
 if __name__ == '__main__':
