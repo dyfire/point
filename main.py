@@ -17,8 +17,12 @@ def analyze(data_frame, col):
     :param col: 列名
     :return: DataFrame
     """
-    return data_frame.groupby([col])[col].count() \
+    df = data_frame.groupby([col])[col].count() \
         .reset_index(name='num').sort_values(by='num', ascending=False)
+    total = df['num'].sum()
+    df['percent'] = round(df['num'] / total, 2)
+
+    return df
 
 
 def multi(data_frame, col):
@@ -109,7 +113,7 @@ def run():
 
     df = df[(df['Age'] <= 60) & (df['Age'] >= 15)]
 
-    chart_lang(df)
+    pie_map(df)
 
     print("finished")
 
@@ -213,20 +217,103 @@ def chart_lang(df):
     data_r = analyze(df, 'JobSkillImportanceR')
     data_sql = analyze(df, 'JobSkillImportanceSQL')
 
-    x = data_python['JobSkillImportancePython']
+    x = [y for y in data_python['JobSkillImportancePython']]
     data_python_y = [int(y) for y in data_python['num']]
     data_r_y = [int(y) for y in data_r['num']]
     data_sql_y = [int(y) for y in data_sql['num']]
-    
+
     c = (
-        Line()
+        Bar(init_opts=opts.InitOpts(width='1000px'))
             .add_xaxis(x)
-            .add_yaxis('Python', data_python_y, is_step=True)
-            .add_yaxis('R', data_r_y, is_step=True)
-            .add_yaxis('SQL', data_sql_y, is_step=True)
-            .set_global_opts(title_opts=opts.TitleOpts(title='语言在工作中重要性折线图'))
+            .add_yaxis('Python', data_python_y)
+            .add_yaxis('R', data_r_y)
+            .add_yaxis('SQL', data_sql_y)
+            .set_series_opts(label_opts=opts.LabelOpts(position='right'
+                                                       # 设置数据标签所在的位置'top'，'left'，'right'，'bottom'，'inside'，'insideLeft'，'insideRight'
+                                                       # 'insideTop'，'insideBottom'， 'insideTopLeft'，'insideBottomLeft'
+                                                       # 'insideTopRight'，'insideBottomRight'
+                                                       , font_size=12
+                                                       # ,formatter #数据标签显示格式
+                                                       )  ##设置数据标签的格式s
+                             )
+            .reversal_axis()
     )
-    c.render('line.html')
+    c.render('line_lang.html')
+
+
+def pie_map(df):
+    data = analyze(df, 'Country').head(20)
+    data_x = [y for y in data['Country']]
+    data_y = [int(y) for y in data['num']]
+    data_per = data['percent']
+    # c = (Bar(init_opts=opts.InitOpts(width='1000px'))
+    #     .add_xaxis(xaxis_data=data_x)
+    #     .add_yaxis(series_name='国家', yaxis_data=data_y, label_opts=opts.LabelOpts(is_show=False))
+    #     .set_global_opts(
+    #     tooltip_opts=opts.TooltipOpts(
+    #         is_show=True, trigger="axis", axis_pointer_type="cross"
+    #     ),
+    #     title_opts=opts.TitleOpts(title="从业者所属国家"),
+    #     xaxis_opts=opts.AxisOpts(name_rotate=60, axislabel_opts={"rotate": 45}))
+    # )
+    # line = (
+    #     Line()
+    #         .add_xaxis(xaxis_data=data_x)
+    #         .add_yaxis(y_axis=data_per,
+    #                    series_name="国家占比",
+    #                    yaxis_index=1,
+    #                    label_opts=opts.LabelOpts(is_show=False))
+    # )
+    # c.overlap(line).render('country.html')
+
+
+    #
+    x_data = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"]
+    bar = (
+        Bar(init_opts=opts.InitOpts(width="1200px", height="500px"))  # 设置柱形图长宽
+            .add_xaxis(xaxis_data=x_data)
+            .add_yaxis(
+            "蒸发量",
+            [2.0, 4.9, 7.0, 23.2, 25.6, 76.7, 135.6, 162.2, 32.6, 20.0, 6.4, 3.3, ])
+            .add_yaxis(
+            "降水量",
+            [2.6, 5.9, 9.0, 26.4, 28.7, 70.7, 175.6, 182.2, 48.7, 18.8, 6.0, 2.3, ],
+            label_opts=opts.LabelOpts(is_show=False),
+        )
+            .extend_axis(
+            yaxis=opts.AxisOpts(
+                name="温度", type_="value", min_=0, max_=25, interval=5,
+                axislabel_opts=opts.LabelOpts(formatter="{value} °C"),
+            )
+        )
+            .set_global_opts(
+            tooltip_opts=opts.TooltipOpts(
+                is_show=True, trigger="axis", axis_pointer_type="cross"
+            ),
+            xaxis_opts=opts.AxisOpts(
+                type_="category",
+                axispointer_opts=opts.AxisPointerOpts(is_show=True, type_="shadow"),
+            ),
+            yaxis_opts=opts.AxisOpts(
+                name="水量", type_="value",
+                min_=0, max_=250, interval=50,
+                axislabel_opts=opts.LabelOpts(formatter="{value} ml"),
+                axistick_opts=opts.AxisTickOpts(is_show=True),
+                splitline_opts=opts.SplitLineOpts(is_show=True),
+            ),
+        )
+    )
+    line = (
+        Line()
+            .add_xaxis(xaxis_data=x_data)
+            .add_yaxis(
+            series_name="平均温度",
+            yaxis_index=1,
+            y_axis=[2.0, 2.2, 3.3, 4.5, 6.3, 10.2, 20.3, 23.4, 23.0, 16.5, 12.0, 6.2],
+            label_opts=opts.LabelOpts(is_show=False),
+        )
+    )
+    bar.overlap(line).render("mixed_bar_and_line.html")
 
 
 if __name__ == '__main__':
