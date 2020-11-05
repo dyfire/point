@@ -114,7 +114,7 @@ def run():
 
     df = df[(df['Age'] <= 60) & (df['Age'] >= 15)]
 
-    program_cloud_lang(df)
+    big_data_importance(df)
 
     print("finished")
 
@@ -354,6 +354,39 @@ def program_cloud_lang(df):
             .set_global_opts(title_opts=opts.TitleOpts(title="推荐编程语言"))
     )
     c.render('program_lang_cloud.html')
+
+
+def big_data_importance(df):
+    data_python = analyze(df, 'JobSkillImportanceBigData')
+    data_r = analyze(df, 'JobSkillImportanceDegree')
+    data_sql = analyze(df, 'JobSkillImportanceEnterpriseTools')
+    print(data_python)
+    print(data_r)
+
+    data =
+    return
+    x = [y for y in data_python['JobSkillImportanceBigData']]
+    data_python_y = [int(y) for y in data_python['num']]
+    data_r_y = [int(y) for y in data_r['num']]
+    data_sql_y = [int(y) for y in data_sql['num']]
+    
+    c = (
+        Bar(init_opts=opts.InitOpts(width='1000px'))
+            .add_xaxis(x)
+            .add_yaxis('Python', data_python_y)
+            .add_yaxis('R', data_r_y)
+            .add_yaxis('SQL', data_sql_y)
+            .set_series_opts(label_opts=opts.LabelOpts(position='right'
+                                                       # 设置数据标签所在的位置'top'，'left'，'right'，'bottom'，'inside'，'insideLeft'，'insideRight'
+                                                       # 'insideTop'，'insideBottom'， 'insideTopLeft'，'insideBottomLeft'
+                                                       # 'insideTopRight'，'insideBottomRight'
+                                                       , font_size=12
+                                                       # ,formatter #数据标签显示格式
+                                                       )  ##设置数据标签的格式s
+                             )
+            .reversal_axis()
+    )
+    c.render('line_importance.html')
 
 
 if __name__ == '__main__':
