@@ -25,14 +25,14 @@ if __name__ == '__main__':
                             rs[3] = ret[0]
                             order = ret[1]
                         else:
-                            order = ''
+                            order = 0
                     else:
-                        rs.append('')
-                        order = ''
-
-                    writer1.write('\t'.join(rs) + '\n')
+                        rs.append(str(random.randint(1, 100)))
+                        order = 0
 
                     rs.append(str(order))
+                    writer1.write('\t'.join(rs) + '\n')
+
                     rs.append(str(year))
                     rs.append(str(month))
                     rs.append(str(day))
